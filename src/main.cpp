@@ -1,3 +1,6 @@
+#include "vec3.h"
+#include "color.h"
+
 #include <iostream>
 using namespace std;
 
