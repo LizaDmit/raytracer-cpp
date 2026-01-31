@@ -5,17 +5,55 @@
 #include <iostream>
 using namespace std;
 
+double hit_sphere(const point3& center, double radius, const ray& r) {
+
+    // Vector from the ray origin to the sphere center
+    vec3 oc = center - r.origin();
+
+    // quadratic function a*t^2 + b*t + c = 0 and b = -2h
+    // a coefficient
+    auto a = r.direction().length_squared();
+
+    // h coefficient
+    auto h = dot(r.direction(), oc);
+
+    // c coefficient
+    auto c = oc.length_squared() - radius*radius;
+
+    auto discriminant = h*h - a*c;
+    
+    if (discriminant < 0) {
+        return -1.0; 
+    } 
+    else {
+        return (h - sqrt(discriminant)) / a;
+    }
+
+}
+
 color ray_color(const ray& r) {
+
+    // t is the distance along the ray where the hit occurs
+    auto t = hit_sphere(point3(0,0,-1), 0.5, r);
+    if (t > 0.0) {
+
+        // Normal vector from the hit point to the center of the sphere
+        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
+
+        // Colors must be in the range [0, 1], but surface normals are in [-1, 1]
+        return 0.5*color(N.x()+1, N.y()+1, N.z() + 1);
+    }
 
     // Normalized vector
     vec3 unit_direction = unit_vector(r.direction());
 
-    // Coefficient for gradiend calculation (how much the vector points upward)
-    auto a = 0.5*(unit_direction.y() + 1.0);
+    // Coefficient for gradiend calculation (how much the vector points upward/to the right)
+    auto a = 0.5*(unit_direction.x() + 1.0);
 
     // Final blended color
     return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
 }
+
 
 int main() {
 
