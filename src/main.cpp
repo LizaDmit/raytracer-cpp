@@ -6,7 +6,15 @@
 using namespace std;
 
 color ray_color(const ray& r) {
-    return color(0,0,0);
+
+    // Normalized vector
+    vec3 unit_direction = unit_vector(r.direction());
+
+    // Coefficient for gradiend calculation (how much the vector points upward)
+    auto a = 0.5*(unit_direction.y() + 1.0);
+
+    // Final blended color
+    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
 }
 
 int main() {
@@ -40,9 +48,6 @@ int main() {
 
     cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-    auto viewport_height = 2.0;
-    auto viewport_width = viewport_height * (double(image_width)/image_height);
-
     for (int j = 0; j < image_height; j++) {
 
         clog << "\rScanlines remaining: " << (image_height - j) << ' ' << flush;
@@ -61,7 +66,6 @@ int main() {
             // Traces the ray into the scene and computes the color seen along that ray
             color pixel_color = ray_color(r);
 
-            auto pixel_color = color(double(i)/(image_width-1), double(j)/(image_height-1), 0);
             write_color(cout, pixel_color);
         }
     }
