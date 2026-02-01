@@ -5,7 +5,7 @@
 
 class hit_record {
     public:
-        point3 t;
+        point3 p;
         vec3 normal;
         double t;
 };
@@ -13,10 +13,12 @@ class hit_record {
 // Like a parent class for other children classes like spheres, triangles, etc;
 // exists to enforce a common pattern:
 class hittable {
+    public:
     virtual ~hittable() = default;
 
 
     virtual bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const = 0;
+    
 };
 
 
