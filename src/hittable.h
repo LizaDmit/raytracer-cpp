@@ -8,6 +8,16 @@ class hit_record {
         point3 p;
         vec3 normal;
         double t;
+        bool front_face;
+
+        void set_face_normal(const ray& r, const vec3& outward_normal) {
+            
+            // Checks if the vectors are opposite direction
+            front_face = dot(r.direction(), outward_normal) < 0;
+
+            // Ensures normal always points against the ray direction
+            normal = front_face ? outward_normal : -outward_normal;
+        }
 };
 
 // Like a parent class for other children classes like spheres, triangles, etc;

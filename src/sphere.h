@@ -49,6 +49,12 @@ class sphere : public hittable {
         // The surface normal using hit point
         rec.normal = (rec.p - center) / radius;
 
+        // Normalized vector from the sphere center to the hit point
+        vec3 outward_normal = (rec.p - center) / radius;
+        
+        // Set the direction of the vector
+        rec.set_face_normal(r, outward_normal);
+
         return true;
     }
 
