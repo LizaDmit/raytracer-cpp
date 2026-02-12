@@ -1,67 +1,36 @@
-#include "vec3.h"
-#include "color.h"
-#include "ray.h"
+#include "rtweekend.h" // Already includes most of the needed libraries and files
 
-#include <iostream>
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h" 
+
 using namespace std;
 
-double hit_sphere(const point3& center, double radius, const ray& r) {
+color ray_color(const ray& r, const hittable& world) {
 
-    // Vector from the ray origin to the sphere center
-    vec3 oc = center - r.origin();
-
-    // quadratic function a*t^2 + b*t + c = 0 and b = -2h
-    // a coefficient
-    auto a = r.direction().length_squared();
-
-    // h coefficient
-    auto h = dot(r.direction(), oc);
-
-    // c coefficient
-    auto c = oc.length_squared() - radius*radius;
-
-    auto discriminant = h*h - a*c;
-    
-    if (discriminant < 0) {
-        return -1.0; 
-    } 
-    else {
-        return (h - sqrt(discriminant)) / a;
+    hit_record rec;                                                 // A structure to store intersection info
+    if (world.hit(r, 0, infinity, rec)) {                           // Search from t = 0 to infinity if the ray hits anything
+        return 0.5 * (rec.normal + color(1,1,1));                   // Returns the objects color
     }
 
+    vec3 unit_direction = unit_vector(r.direction());               // Normalize ray direction to compute the gradient for the background
+    auto a = 0.5*(unit_direction.y() + 1.0);                        // Component to add to the blend factor
+    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);   // Returns the background color
 }
-
-color ray_color(const ray& r) {
-
-    // t is the distance along the ray where the hit occurs
-    auto t = hit_sphere(point3(0,0,-1), 0.5, r);
-    if (t > 0.0) {
-
-        // Normal vector from the hit point to the center of the sphere
-        vec3 N = unit_vector(r.at(t) - vec3(0,0,-1));
-
-        // Colors must be in the range [0, 1], but surface normals are in [-1, 1]
-        return 0.5*color(N.x()+1, N.y()+1, N.z() + 1);
-    }
-
-    // Normalized vector
-    vec3 unit_direction = unit_vector(r.direction());
-
-    // Coefficient for gradiend calculation (how much the vector points upward/to the right)
-    auto a = 0.5*(unit_direction.x() + 1.0);
-
-    // Final blended color
-    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);
-}
-
 
 int main() {
 
+    // Image dimensions
     auto aspect_ratio = 16.0 / 9.0;
     int image_width = 400;
 
     int image_height = int(image_width / aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
+
+    hittable_list world;
+
+    world.add(make_shared<sphere>(point3(0,0,-1), 0.5));      // A small sphere in front of the camera
+    world.add(make_shared<sphere>(point3(0,-100.5,-1), 100)); // A huge sphere below the first one
 
     // Camera
     auto focal_length = 1.0;
@@ -102,8 +71,7 @@ int main() {
             ray r(camera_center, ray_direction);
 
             // Traces the ray into the scene and computes the color seen along that ray
-            color pixel_color = ray_color(r);
-
+            color pixel_color = ray_color(r, world);
             write_color(cout, pixel_color);
         }
     }
