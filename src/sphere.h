@@ -12,7 +12,7 @@ class sphere : public hittable {
     sphere(const point3& center, double radius) : center(center), radius(std::fmax(0,radius)) {}
 
     // Override - safety feature for virtual. Not mandatory but a good practice.
-    bool hit(const ray& r, double ray_tmin, double ray_tmax, hit_record& rec) const override {
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
 
         vec3 oc = center - r.origin();
 
@@ -32,11 +32,11 @@ class sphere : public hittable {
         auto root = (h - sqrtd) / a;
 
         // If not in the acceptable range, try the larger root
-        if (root <= ray_tmin || ray_tmax <= root) {
+        if (!ray_t.surrounds(root)) {
             root = (h + sqrtd) / a;
 
         // If not in the acceptable range, report no hit
-            if (root <= ray_tmin || ray_tmax <= root)
+            if (!ray_t.surrounds(root))
                 return false;
         }
 

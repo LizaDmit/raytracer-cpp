@@ -9,13 +9,13 @@ using namespace std;
 color ray_color(const ray& r, const hittable& world) {
 
     hit_record rec;                                                 // A structure to store intersection info
-    if (world.hit(r, 0, infinity, rec)) {                           // Search from t = 0 to infinity if the ray hits anything
+    if (world.hit(r, interval(0, infinity), rec)) {                           // Search from t = 0 to infinity if the ray hits anything
         return 0.5 * (rec.normal + color(1,1,1));                   // Returns the objects color
     }
 
     vec3 unit_direction = unit_vector(r.direction());               // Normalize ray direction to compute the gradient for the background
     auto a = 0.5*(unit_direction.y() + 1.0);                        // Component to add to the blend factor
-    return (1.0-a)*color(1.0, 1.0, 1.0) + a*color(0.5, 0.7, 1.0);   // Returns the background color
+    return (1.0-a)*color(0.2, 0.0, 0.4) + a*color(0.6, 0.1, 0.4);   // Returns the background color
 }
 
 int main() {
