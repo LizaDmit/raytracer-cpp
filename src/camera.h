@@ -81,7 +81,7 @@ class camera {
 
             vec3 unit_direction = unit_vector(r.direction());               // Normalize ray direction to compute the gradient for the background
             auto a = 0.5*(unit_direction.y() + 1.0);                        // Component to add to the blend factor
-            return (1.0-a)*color(0.2, 0.0, 0.4) + a*color(0.6, 0.1, 0.4);   // Returns the background color
+            return (1.0-a)*color(0.2, 0.9, 0.4) + a*color(0.9, 0.01, 0.1);   // Returns the background color
         }
 
 
