@@ -46,6 +46,12 @@ class vec3 {
         double length_squared() const {     // Helper function for getting the length
             return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];   
         }
+        static vec3 random() {
+            return vec3(random_double(), random_double(), random_double());
+        }
+        static vec3 random(double min, double max) {
+            return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+        }
 
 };
 
@@ -93,6 +99,23 @@ inline vec3 cross(const vec3& u, const vec3& v) {               // Cross product
 
 inline vec3 unit_vector(const vec3& v) {                        // Vector normalization
     return v / v.length();
+}
+
+inline vec3 random_unit_vector() {
+    while (true) {
+        auto p = vec3::random(-1,1);                            // Generates a random vector
+        auto lensq = p.length_squared();                        // Calculates how far the point is from the origin
+        if (1e-160 < lensq && lensq <= 1)                       // Keeps only the points inside the sphere that are not too close to the center
+            return p / sqrt(lensq);                             // Returns a unit vector
+    }                                                           
+}
+
+inline vec3 random_on_hemisphere(const vec3& normal) {
+    vec3 on_unit_sphere = random_unit_vector();
+    if (dot(on_unit_sphere, normal) > 0.0)                      // In the same hemisphere as the normal
+        return on_unit_sphere;
+    else
+        return -on_unit_sphere;
 }
 
 
