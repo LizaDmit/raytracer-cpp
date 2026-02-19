@@ -11,6 +11,7 @@ class camera {
         double aspect_ratio = 1.0;
         int image_width = 100;
         int samples_per_pixel = 10;  // Count of random samples for each pixel
+        int max_depth = 10;          // Maximum number of ray bounces into the scene
 
         void render(const hittable& world) {
             initialize();
@@ -25,7 +26,7 @@ class camera {
                     color pixel_color(0,0,0);
                     for (int sample = 0; sample < samples_per_pixel; sample++) {
                         ray r = get_ray(i, j);
-                        pixel_color += ray_color(r, world);
+                        pixel_color += ray_color(r, world, max_depth);
                     }
                     write_color(std::cout, pixel_samples_scale * pixel_color);
 
@@ -101,16 +102,18 @@ class camera {
             return vec3(random_double() - 0.5, random_double() - 0.5, 0);  // Returns the vector to a random point in the [-0.5,-0.5]-[0.5,0.5] unit square
         }
 
-        color ray_color(const ray& r, const hittable& world) const {
+        color ray_color(const ray& r, const hittable& world, int depth) const {
+            if (depth <= 0) return color(0,0,0);
             hit_record rec;                                                 // A structure to store intersection info
-            if (world.hit(r, interval(0, infinity), rec)) {                 // Search from t = 0 to infinity if the ray hits anything
-                vec3 direction = random_on_hemisphere(rec.normal);
-                return 0.5 * ray_color(ray(rec.p, direction), world);       // Returns the objects color
+            if (world.hit(r, interval(0.01, infinity), rec)) {                 // Search from t = 0 to infinity if the ray hits anything
+                vec3 direction = random_on_hemisphere(rec.normal);          // Randomly sends the ray from the object, get the color of the surrondings,
+                                                                            // recursively traces back to the object and gives its the mixed color
+                return 0.5 * ray_color(ray(rec.p, direction), world, depth-1);       // Sends the ray back to the sphere. 0.5 is the fraction of the incoming light refelected
             }
 
             vec3 unit_direction = unit_vector(r.direction());               // Normalize ray direction to compute the gradient for the background
             auto a = 0.5*(unit_direction.y() + 1.0);                        // Component to add to the blend factor
-            return (1.0-a)*color(0.2, 0.9, 0.4) + a*color(0.9, 0.01, 0.1);   // Returns the background color
+            return (1.0-a)*color(0.2, 0.9, 0.4) + a*color(0.9, 0.01, 0.1);  // Returns the background color
         }
 
 
