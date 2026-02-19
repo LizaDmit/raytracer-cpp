@@ -104,16 +104,17 @@ class camera {
 
         color ray_color(const ray& r, const hittable& world, int depth) const {
             if (depth <= 0) return color(0,0,0);
+
             hit_record rec;                                                 // A structure to store intersection info
-            if (world.hit(r, interval(0.01, infinity), rec)) {                 // Search from t = 0 to infinity if the ray hits anything
-                vec3 direction = random_on_hemisphere(rec.normal);          // Randomly sends the ray from the object, get the color of the surrondings,
+            if (world.hit(r, interval(0.001, infinity), rec)) {                 // Search from t = 0 to infinity if the ray hits anything
+                vec3 direction = rec.normal + random_unit_vector();         // Randomly sends the ray from the object, get the color of the surrondings,
                                                                             // recursively traces back to the object and gives its the mixed color
                 return 0.5 * ray_color(ray(rec.p, direction), world, depth-1);       // Sends the ray back to the sphere. 0.5 is the fraction of the incoming light refelected
             }
 
             vec3 unit_direction = unit_vector(r.direction());               // Normalize ray direction to compute the gradient for the background
             auto a = 0.5*(unit_direction.y() + 1.0);                        // Component to add to the blend factor
-            return (1.0-a)*color(0.2, 0.9, 0.4) + a*color(0.9, 0.01, 0.1);  // Returns the background color
+            return (1.0-a)*color(0.2, 0.5, 0.4) + a*color(0.4, 0.2, 0.8);  // Returns the background color
         }
 
 
