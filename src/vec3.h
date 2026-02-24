@@ -126,5 +126,17 @@ inline vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2*dot(v,n)*n;                                     // Computes the ray reflected from metal
 }
 
+inline vec3 refract(const vec3& uv, const vec3& n, 
+                    double etai_over_etat) {                     // uv - incoming ray direction (unit len), n - unit surface normal, etai_over_etat - indices fro Snell's Law
+    
+    auto cos_theta = std::fmin(dot(-uv, n), 1.0);                // Calculates cos from 𝐚*𝐛=|𝐚||𝐛|cos𝜃, when a and b - unit vectors
+
+    vec3 r_out_perp =  etai_over_etat * (uv + cos_theta*n);      // Computes tangent to normal part of the refracted ray (formula from Snell's Law)
+
+    vec3 r_out_parallel = 
+    -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n; // Computes part parallel to n (from Pythagorean theorem)
+
+    return r_out_perp + r_out_parallel;                           // Returns the final ray direction
+}
 
 #endif
