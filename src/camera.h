@@ -14,6 +14,12 @@ class camera {
         int samples_per_pixel = 10;  // Count of random samples for each pixel
         int max_depth = 10;          // Maximum number of ray bounces into the scene
 
+        point3 lookfrom = point3(0,0,0); // Point camera is looking from
+        point3 lookat = point3(0,0,-1); // Point camera is looking at
+        vec3 vup = vec3(0,1,0); // Camera-relative "up" direction
+
+        double vfov = 90; // Vertical view angle - field of view
+
         void render(const hittable& world) {
             initialize();
 
@@ -30,20 +36,6 @@ class camera {
                         pixel_color += ray_color(r, world, max_depth);
                     }
                     write_color(std::cout, pixel_samples_scale * pixel_color);
-
-                    /*
-                    // World-space position of the center of pixel (i, j)
-                    auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-
-                    // Direction pointing from the camera to that pixel
-                    auto ray_direction = pixel_center - center;
-
-                    // Ray with the required direction
-                    ray r(center, ray_direction);
-
-                    // Traces the ray into the scene and computes the color seen along that ray
-                    pixel_color = ray_color(r, world);
-                    write_color(cout, pixel_color); */
                 }
             }
             clog << "\rDone.                 \n";
@@ -56,6 +48,7 @@ class camera {
         point3 pixel00_loc;          // Location of pixel 0, 0
         vec3 pixel_delta_u;          // Offset to pixel to the right
         vec3 pixel_delta_v;          // Offset to pixel below
+        vec3   u, v, w;              // Camera frame basis vectors
 
 
         void initialize() {
@@ -63,24 +56,32 @@ class camera {
             image_height = (image_height < 1) ? 1 : image_height;
 
             pixel_samples_scale = 1.0 / samples_per_pixel;
+
+            center = lookfrom;
             
-            center = point3(0, 0, 0);
 
             // Viewport Dimensions
-            auto focal_length = 1.0;
-            auto viewport_height = 2.0;
+            auto focal_length = (lookfrom - lookat).length(); // Distance from the camera to the point it’s looking at
+            auto theta = degrees_to_radians(vfov);
+            auto h = std::tan(theta/2);
+            auto viewport_height = 2 * h * focal_length;
             auto viewport_width = viewport_height * (double(image_width)/image_height);
 
+            // Set up of the orthonormal basis for the camera
+            w = unit_vector(lookfrom - lookat);
+            u = unit_vector(cross(vup, w));
+            v = cross(w, u);
+
             // Vectors across horizontal and vertical viewport edges
-            auto viewport_u = vec3(viewport_width, 0, 0);
-            auto viewport_v = vec3(0, -viewport_height, 0);
+            auto viewport_u = viewport_width * u;   // Stretches u to the whole viewport witdth 
+            auto viewport_v = viewport_height * -v; // Stretches v to the whole viewport height (- because pixels rows go downward)
 
             // Horizontal and vertical delta between pixels
             pixel_delta_u = viewport_u / image_width;
             pixel_delta_v = viewport_v / image_height;
 
             // Location of the upper left point of the viewport
-            auto viewport_upper_left = center - vec3(0, 0, focal_length) - viewport_u/2 - viewport_v/2;
+            auto viewport_upper_left = center - (focal_length * w) - viewport_u/2 - viewport_v/2;
 
             // Location of the upper left pixel (pixel_delta_u + pixel_delta_v is a movement along the horizontal vector)
             pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);

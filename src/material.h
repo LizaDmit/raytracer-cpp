@@ -61,6 +61,20 @@ class dielectric : public material {                                           /
                                                     refraction_index;          // Chooses either outside or inside absorption index
 
             vec3 unit_direction = unit_vector(r_in.direction());               // Normalizes incoming rays
+
+            double cos_theta = 
+                           std::fmin(dot(-unit_direction, rec.normal), 1.0);   // Computes the angle between the incoming ray and the normal
+            double sin_theta = std::sqrt(1.0 - cos_theta*cos_theta);           // Computes sin using trig identity
+
+            bool cannot_refract = ri * sin_theta > 1.0;                        // Checks for total internal reflection
+            vec3 direction;
+
+            if (cannot_refract || reflectance(cos_theta, ri) > random_double())
+                direction = reflect(unit_direction, rec.normal);               // If refraction is impossible - choose reflection
+            else
+                direction = refract(unit_direction, rec.normal, ri);           // Otherwise - refract by bending through the surface
+
+            scattered = ray(rec.p, direction);
             vec3 refracted = refract(unit_direction, rec.normal, ri);          // Computes the "bent" ray using Snell's Law
 
             scattered = ray(rec.p, refracted);                                 // Creates a new ray from hit point to the refracted direction
@@ -69,6 +83,12 @@ class dielectric : public material {                                           /
 
             private:
                 double refraction_index;
+
+            static double reflectance(double cosine, double refraction_index) { // Returns how much light reflects
+                auto r0 = (1 - refraction_index) / (1 + refraction_index);      // Computes how much light reflects when hitting straight on (θ = 0°)
+                r0 = r0*r0;
+                return r0 + (1-r0)*std::pow((1 - cosine),5);                    // Calculates how much light reflects vs refracts based on viewing angle (Schlick Approximation)
+    }
 };
 
 
