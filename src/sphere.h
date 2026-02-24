@@ -5,11 +5,13 @@
 #include "vec3.h"
 #include "ray.h"
 
+class material; 
+
 class sphere : public hittable {
   public:
 
     // Constructor
-    sphere(const point3& center, double radius) : center(center), radius(std::fmax(0,radius)) {}
+    sphere(const point3& center, double radius, shared_ptr<material> mat) : center(center), radius(std::fmax(0,radius)), mat(mat) {}
 
     // Override - safety feature for virtual. Not mandatory but a good practice.
     bool hit(const ray& r, interval ray_t, hit_record& rec) const override {
@@ -56,6 +58,7 @@ class sphere : public hittable {
         rec.set_face_normal(r, outward_normal);
 
         rec.mat = mat;
+
 
         return true;
     }
