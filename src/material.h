@@ -20,14 +20,16 @@ class lambertian : public material {
         lambertian(const color& albedo) : albedo(albedo) {}
 
         bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
-            auto scatter_direction = rec.normal + random_unit_vector();     // Generate a random direction biased toward the normal
-            scattered = ray(rec.p, scatter_direction);                      // Create a new ray starting at the hit point and going in that direction
-            attenuation = albedo;
+            auto scatter_direction = rec.normal + random_unit_vector();     // Generates a random direction biased toward the normal
+
+            if (scatter_direction.near_zero()) scatter_direction = rec.normal; // Prevents the vecors from summing to zero with th normal
+            scattered = ray(rec.p, scatter_direction);                      // Creates a new ray starting at the hit point and going in that direction
+            attenuation = albedo;                                           // Shows that color of the surface affects the bounced light
             return true;
         }
     private:
         color albedo;
-}
+};
 
 
 #endif

@@ -2,6 +2,7 @@
 #define COLOR_H
 
 #include "vec3.h"
+#include "interval.h"
 using namespace std;
 
 using color = vec3;
@@ -12,6 +13,7 @@ void write_color(ostream& out, const color& pixel_color) {
     auto g = pixel_color.y();
     auto b = pixel_color.z();
 
+    static const interval intensity(0.000, 0.999);
     int rbyte = int(255.999 * r);   // From [0,1] format to [0,256] format
     int gbyte = int(255.999 * g);
     int bbyte = int(255.999 * b);

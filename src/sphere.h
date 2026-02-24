@@ -55,12 +55,15 @@ class sphere : public hittable {
         // Set the direction of the vector
         rec.set_face_normal(r, outward_normal);
 
+        rec.mat = mat;
+
         return true;
     }
 
   private:
     point3 center;
     double radius;
+    shared_ptr<material> mat;
 };
 
 
