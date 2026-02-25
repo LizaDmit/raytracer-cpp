@@ -41,10 +41,13 @@ int main() {
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
-    cam.vfov = 50;
-    cam.lookfrom = point3(-2,2,1);
-    cam.lookat = point3(0,0,-1);
-    cam.vup = vec3(0,1,0);
+    cam.vfov = 20;                  // Closiness 
+    cam.lookfrom = point3(-2,2,1);  // Point of view
+    cam.lookat = point3(0,0,-1);    // Direction of view
+    cam.vup = vec3(0,1,0);          // Camera tilt
+
+    cam.defocus_angle = 10.0;       // Controls the aperture size (how wide the lens opening is)
+    cam.focus_dist    = 3.4;        // Sets the distance from the camera to the sharp focus plane
 
     cam.render(world); // Loops over every pixel in the "world" and writes its color output
 
